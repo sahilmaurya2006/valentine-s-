@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For You 💖</title>
+
+<meta property="og:title" content="For You 💖">
+<meta property="og:description" content="Something I made… just for you.">
+<meta property="og:image" content="https://picsum.photos/600/600">
+<meta property="og:type" content="website">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif}
+html,body{width:100%;height:100%;overflow:hidden}
+
+body{
+  background:linear-gradient(135deg,#ff9ecf,#ffc1e3,#ffd6ec);
+  display:flex;justify-content:center;align-items:center;
+  color:#fff;
+  animation:bgMove 10s infinite alternate
+}
+@keyframes bgMove{
+  from{background-position:0% 50%}
+  to{background-position:100% 50%}
+}
+
+.heart{position:absolute;bottom:-20px;animation:floatUp linear infinite;opacity:.8}
+@keyframes floatUp{
+  from{transform:translateY(0) scale(1)}
+  to{transform:translateY(-120vh) scale(1.4);opacity:0}
+}
+
+.screen{
+  width:100%;max-width:420px;height:100%;
+  padding:24px;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  text-align:center
+}
+.hidden{display:none}
+
+.buttons{position:relative;width:100%;height:200px;margin-top:20px}
+button{
+  border:none;border-radius:999px;
+  padding:14px 28px;
+  font-size:1.1rem;
+  cursor:pointer
+}
+
+#yesBtn{
+  background:#ff4f9a;color:#fff;
+  box-shadow:0 0 15px rgba(255,79,154,.7);
+  animation:pulse 1.5s infinite
+}
+@keyframes pulse{
+  0%{box-shadow:0 0 10px rgba(255,79,154,.5)}
+  50%{box-shadow:0 0 25px rgba(255,79,154,1)}
+  100%{box-shadow:0 0 10px rgba(255,79,154,.5)}
+}
+
+#noBtn{
+  position:absolute;
+  background:#f3d1e3;
+  color:#555;
+  transition:.3s
+}
+
+.cards{width:100%;display:flex;flex-direction:column;gap:16px}
+.card{
+  background:rgba(255,255,255,.25);
+  backdrop-filter:blur(8px);
+  border-radius:16px;
+  padding:24px;
+  cursor:pointer
+}
+
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-top:16px
+}
+.gallery img{
+  width:100%;
+  height:100px;
+  object-fit:cover;
+  border-radius:12px
+}
+
+#cardView{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.55);
+  backdrop-filter:blur(10px);
+  display:flex;justify-content:center;align-items:center;
+  padding:24px;z-index:999
+}
+#cardView.hidden{display:none}
+
+#cardBox{
+  background:linear-gradient(135deg,#ff4f9a,#ff85b8);
+  border-radius:20px;
+  padding:30px;
+  max-width:420px;width:100%;
+  position:relative;
+  text-align:center
+}
+
+#closeBtn{
+  position:absolute;
+  top:12px;right:12px;
+  width:40px;height:40px;
+  border-radius:50%;
+  border:none;
+  background:rgba(255,255,255,.3);
+  color:#fff;
+  font-size:1.4rem
+}
+
+#musicBtn{
+  position:fixed;
+  bottom:20px;right:20px;
+  width:50px;height:50px;
+  border-radius:50%;
+  background:#ff4f9a;
+  color:#fff;
+  border:none;
+  font-size:1.4rem;
+  box-shadow:0 0 15px rgba(255,79,154,.6);
+}
+</style>
+</head>
+
+<body>
+
+<button id="musicBtn">🎵</button>
+<audio id="bgMusic" loop>
+  <source src="https://cdn.pixabay.com/audio/2023/03/06/audio_5b1f8f2fa6.mp3">
+</audio>
+
+<script>
+const herName="HER_NAME"
+const firstMeet="2024-08-20"
+const proposalMode=false
+
+/* typing effect */
+function typeText(el,text,speed=35){
+  el.textContent=""
+  let i=0
+  const t=setInterval(()=>{
+    el.textContent+=text[i++]
+    if(i>=text.length)clearInterval(t)
+  },speed)
+}
+
+/* 💓 HEARTBEAT VIBRATION */
+let heartbeatInterval = null
+
+function startHeartbeat(){
+  if(!navigator.vibrate) return
+
+  heartbeatInterval = setInterval(()=>{
+    navigator.vibrate([120, 80, 200]) // lub-dub
+  }, 1000)
+}
+
+/* hearts */
+setInterval(()=>{
+  const h=document.createElement("div")
+  h.className="heart"
+  h.textContent="💖"
+  h.style.left=Math.random()*100+"vw"
+  h.style.fontSize=14+Math.random()*20+"px"
+  h.style.animationDuration=5+Math.random()*5+"s"
+  document.body.appendChild(h)
+  setTimeout(()=>h.remove(),9000)
+},600)
+</script>
+
+<div id="main" class="screen">
+  <h1 id="mainQuestion"></h1>
+  <div class="buttons">
+    <button id="yesBtn">Yes 💕</button>
+    <button id="noBtn">No 😅</button>
+  </div>
+</div>
+
+<div id="surprise" class="screen hidden">
+  <h2>HEY BADMOSH <span id="name"></span> 💕</h2>
+  <p id="since"></p>
+
+  <div class="cards">
+    <div class="card" data-type="random">✨ Something cute</div>
+    <div class="card" data-type="gallery">📸 Our memories</div>
+    <div class="card" data-type="letter">💌 A letter for you</div>
+    <div class="card" data-type="secret">🔒 Open when alone</div>
+  </div>
+</div>
+
+<div id="cardView" class="hidden">
+  <div id="cardBox">
+    <button id="closeBtn">✕</button>
+    <div id="cardContent"></div>
+  </div>
+</div>
+
+<script>
+name.textContent=herName
+mainQuestion.textContent=
+proposalMode?"Will you spend your life with me? 💍":"WILL YOU BE MY VALENTINE?  NOT IN THAT WAY BUT MAY BE GHUMI GHUMI ??💖"
+
+musicBtn.onclick=()=>bgMusic.paused?bgMusic.play():bgMusic.pause()
+
+setInterval(()=>{
+  since.textContent=
+  `We’ve known each other for ${Math.floor((Date.now()-new Date(firstMeet))/86400000)} days 💖`
+},1000)
+
+yesBtn.onclick=()=>{
+  bgMusic.play()
+  startHeartbeat()   // 💓 START HEARTBEAT
+  main.classList.add("hidden")
+  surprise.classList.remove("hidden")
+}
+
+
+/* ✅ ORIGINAL NO BUTTON CHAOS RESTORED */
+let noClicks=0
+noBtn.onclick=()=>{
+  noClicks++
+  noBtn.style.left=Math.random()*80+"%"
+  noBtn.style.top=Math.random()*80+"%"
+  if(noClicks==2)noBtn.textContent="Really? 😭"
+  if(noClicks==3)noBtn.style.transform="scale(.7)"
+  if(noClicks>=4)yesBtn.click()
+}
+
+const compliments=[
+  "Your smile fixes everything 💖",
+  "You feel like home 🏡",
+  "I choose you. Always ✨"
+]
+
+document.querySelectorAll(".card").forEach(card=>{
+  card.onclick=()=>{
+    cardView.classList.remove("hidden")
+    cardContent.innerHTML=""
+
+    if(card.dataset.type==="random"){
+      const p=document.createElement("p")
+      cardContent.appendChild(p)
+      typeText(p,compliments[Math.floor(Math.random()*compliments.length)])
+    }
+
+    if(card.dataset.type==="gallery"){
+      cardContent.innerHTML=`
+        <h2 id="gtitle"></h2>
+        <div class="gallery">
+          <img src="IMAGE121.jpeg">
+          <img src="IMG122.jpeg">
+          <img src="IMG123.jpeg">
+          <img src="IMG124.jpeg">
+        </div>
+      `
+      typeText(document.getElementById("gtitle"),"Our Memories 💕")
+    }
+
+   if(card.dataset.type==="letter"){
+  const p=document.createElement("p")
+  cardContent.appendChild(p)
+  typeText(p,`
+Some feelings don’t rush.
+They settle.
+
+Quietly.
+Patiently.
+Until one day, you realize they’ve been there all along.
+
+That’s how you happened to me.
+
+Not loud.
+Not sudden.
+Just a steady pull —
+toward your voice, your presence,
+the space you leave behind when you’re not around.
+
+I don’t know what this becomes.
+I only know this:
+my heart moves slower now…
+because it’s walking toward you.
+
+And somehow,
+that feels exactly right. 🤍 💖
+`,40)
+}
+
+
+    if(card.dataset.type==="secret"){
+      cardContent.innerHTML=`
+        <h2 id="stitle"></h2>
+        <input id="secretPass" type="password"
+          style="padding:12px;border-radius:12px;border:none;text-align:center">
+        <button id="checkSecret"
+          style="margin-top:12px;padding:10px 22px;border-radius:999px">
+          Unlock 💗
+        </button>
+        <p id="secretMsg"></p>
+      `
+      typeText(document.getElementById("stitle"),"🔒 Open when alone")
+
+      checkSecret.onclick=()=>{
+        if(secretPass.value==="BADMOSH"){
+         typeText(secretMsg, `
+This isn’t meant to be read in noise.
+Or rushed.
+Or shared.
+
+It’s just for you.
+
+I don’t say everything out loud —
+not because I don’t feel it,
+but because some feelings deserve silence.
+
+The truth is…
+you matter to me more than I let on.
+More than jokes.
+More than casual words.
+More than I ever planned.
+
+If you’re reading this alone,
+then you already know —
+some connections don’t ask for permission.
+
+They just stay.
+
+And I’m still here. 🤍
+`,35)
+
+        }else{
+          typeText(secretMsg,"Your nickname for you was: 🫶 related to gunda gardi")
+          secretPass.value=""
+        }
+      }
+    }
+  }
+})
+
+closeBtn.onclick=()=>{
+  cardView.classList.add("hidden")
+  cardContent.innerHTML=""
+}
+</script>
+
+</body>
+</html>
